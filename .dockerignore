@@ -1,0 +1,12 @@
+.git
+.gitignore
+Dockerfile
+k8s-deployment.yaml
+.dockerignore
+README.md
+CONTRIBUTE.md
+PRESENTATION_GUIDE.md
+terraform/
+ansible/
+deploy.sh
+*.md

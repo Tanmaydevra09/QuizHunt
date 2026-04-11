@@ -1,0 +1,22 @@
+# ──────────────────────────────────────────────────────────────
+# QuizHunt — Main Ansible Playbook
+#
+# Configures an EC2 instance and deploys the QuizHunt app.
+# Applies roles in sequence: common → docker → app
+#
+# Usage:
+#   ansible-playbook -i inventory.ini playbook.yml
+# ──────────────────────────────────────────────────────────────
+---
+- name: Deploy QuizHunt Application
+  hosts: quizhunt_servers
+  become: yes
+  gather_facts: yes
+
+  vars:
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+
+  roles:
+    - common
+    - docker
+    - app

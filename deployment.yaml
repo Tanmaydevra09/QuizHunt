@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quizhunt-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: quizhunt
+  template:
+    metadata:
+      labels:
+        app: quizhunt
+    spec:
+      containers:
+      - name: quizhunt-container
+        image: quizhunt-app:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80

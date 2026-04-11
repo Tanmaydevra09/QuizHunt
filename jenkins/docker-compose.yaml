@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  jenkins-ci:
+    build: .
+    container_name: quizhunt-jenkins
+    user: root
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      # Intercept external Docker socket explicitly cleanly bridging the host network into the node
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Map native kubeconfigs out into the Jenkins root path dynamically configuring cluster access
+      - ~/.kube:/root/.kube
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+
+volumes:
+  jenkins_home:

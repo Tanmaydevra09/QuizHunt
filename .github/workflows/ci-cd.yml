@@ -1,0 +1,144 @@
+name: QuizHunt CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/quizhunt-app
+
+jobs:
+  # ─── Job 1: Build, Test & Validate ──────────────────────────
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker Image
+      run: |
+        docker build -t quizhunt-app:${{ github.sha }} .
+        docker tag quizhunt-app:${{ github.sha }} quizhunt-app:latest
+
+    - name: Run Basic Health Check
+      run: |
+        # Start the container to verify it runs
+        docker run -d -p 8080:80 --name test-container quizhunt-app:latest
+        sleep 5
+        # Check if Nginx is serving the index page
+        curl -f http://localhost:8080 || exit 1
+        docker stop test-container
+
+  # ─── Job 2: Push to Docker Hub ──────────────────────────────
+  push-to-dockerhub:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and Push Docker Image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: |
+          ${{ env.DOCKER_IMAGE }}:latest
+          ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+
+    - name: Verify Push
+      run: |
+        echo "✅ Image pushed: ${{ env.DOCKER_IMAGE }}:latest"
+        echo "✅ Image pushed: ${{ env.DOCKER_IMAGE }}:${{ github.sha }}"
+
+  # ─── Job 3: Deploy to AWS via Terraform + Ansible ───────────
+  deploy-to-aws:
+    needs: push-to-dockerhub
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.7.0"
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/quizhunt-key.pem
+        chmod 600 ~/.ssh/quizhunt-key.pem
+
+    - name: Terraform Init
+      working-directory: ./terraform
+      run: terraform init
+
+    - name: Terraform Plan
+      working-directory: ./terraform
+      run: |
+        terraform plan \
+          -var="key_name=${{ secrets.EC2_KEY_NAME }}" \
+          -var="dockerhub_username=${{ secrets.DOCKERHUB_USERNAME }}" \
+          -var="ssh_private_key_path=~/.ssh/quizhunt-key.pem" \
+          -out=tfplan
+
+    - name: Terraform Apply
+      working-directory: ./terraform
+      run: terraform apply -auto-approve tfplan
+
+    - name: Get EC2 Public IP
+      working-directory: ./terraform
+      id: get_ip
+      run: |
+        echo "EC2_IP=$(terraform output -raw instance_public_ip)" >> $GITHUB_OUTPUT
+        echo "APP_URL=$(terraform output -raw app_url)" >> $GITHUB_OUTPUT
+
+    - name: Wait for EC2 to be ready
+      run: |
+        echo "⏳ Waiting for EC2 instance to be ready..."
+        sleep 60
+
+    - name: Install Ansible
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ansible
+
+    - name: Run Ansible Playbook
+      working-directory: ./ansible
+      run: |
+        ansible-playbook \
+          -i inventory.ini \
+          playbook.yml \
+          --ssh-common-args="-o StrictHostKeyChecking=no"
+
+    - name: Deployment Summary
+      run: |
+        echo "🎉 ══════════════════════════════════════════════"
+        echo "   QuizHunt Deployment Complete!"
+        echo "   🌐 App URL: ${{ steps.get_ip.outputs.APP_URL }}"
+        echo "   🖥️  EC2 IP: ${{ steps.get_ip.outputs.EC2_IP }}"
+        echo "══════════════════════════════════════════════════"

@@ -1,0 +1,44 @@
+# ──────────────────────────────────────────────────────────────
+# Role: app — Pull & Deploy QuizHunt Container
+# ──────────────────────────────────────────────────────────────
+---
+- name: Pull latest QuizHunt Docker image
+  docker_image:
+    name: "{{ docker_image }}"
+    source: pull
+    force_source: yes
+
+- name: Stop existing QuizHunt container (if running)
+  docker_container:
+    name: "{{ container_name }}"
+    state: absent
+  ignore_errors: yes
+
+- name: Run QuizHunt container
+  docker_container:
+    name: "{{ container_name }}"
+    image: "{{ docker_image }}"
+    state: started
+    restart_policy: always
+    ports:
+      - "{{ host_port }}:{{ container_port }}"
+    env:
+      TZ: "UTC"
+
+- name: Wait for application to become available
+  uri:
+    url: "http://localhost:{{ host_port }}"
+    status_code: 200
+    timeout: 5
+  register: result
+  retries: 12
+  delay: 5
+  until: result.status == 200
+
+- name: Display deployment status
+  debug:
+    msg: |
+      ✅ QuizHunt deployed successfully!
+      🌐 Container: {{ container_name }}
+      🐳 Image: {{ docker_image }}
+      🔗 Access: http://{{ ansible_host }}:{{ host_port }}

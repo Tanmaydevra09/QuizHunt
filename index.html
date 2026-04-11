@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6694738442083925" crossorigin="anonymous"></script>
+  <meta charset="UTF-8" />
+  <meta name="description" content="QuizHunt is a quiz website that offers quizzes on programming languages such as C, C++, Java, Linux, and operating systems." />
+  <meta name="keywords" content="quiz, website, programming languages, C, C++, Java, Linux, operating systems" />
+  <meta name="author" content="QuizHunt" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  
+  <link rel="icon" type="image/png" href="assets/favicon.png" />
+  <title>QuizHunt - Modern Technical Quizzes</title>
+
+  <!-- External libraries -->
+  <link rel="stylesheet" href="styles/style.css" /> <!-- Bootstrap base -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css"/>
+  
+  <!-- Custom Modern Styles -->
+  <link rel="stylesheet" href="styles/main.css" />
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid">
+      <a class="navbar-brand mx-4" href="./index.html">
+        <span class="brand-q">Q</span>uizHunt
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" style="border: 1px solid rgba(255,255,255,0.2);">
+        <i class="fa-solid fa-bars" style="color: white"></i>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mx-4 ms-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="./index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="pages/playquiz.html">Quizzes</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-glow-1"></div>
+    <div class="hero-glow-2"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">Master Tech Skills Through Interactive Quizzes</h1>
+      <p class="hero-subtitle">
+        Elevate your programming knowledge with challenging quizzes on C++, Python, Java, Data Structures, and more. Where learning meets fun.
+      </p>
+      <div class="hero-buttons">
+        <a href="pages/mega.html" class="btn-primary-custom">Quick Start</a>
+        <a href="#categories" class="btn-secondary-custom">Explore Categories</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats-section">
+    <div class="stat-item">
+      <div class="stat-value">15+</div>
+      <div class="stat-label">Quiz Categories</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">500+</div>
+      <div class="stat-label">Tech Questions</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">10k+</div>
+      <div class="stat-label">Global Users</div>
+    </div>
+  </section>
+
+  <!-- Featured Categories -->
+  <section id="categories">
+    <div class="section-header">
+      <h2>Popular Quizzes</h2>
+      <p>Test your knowledge on the most demanded technologies in the industry.</p>
+    </div>
+    <!-- Dynamically rendered by quiz-metadata.js -->
+    <div class="quiz-grid" id="homepage-quizzes">
+      <!-- Cards go here -->
+    </div>
+  </section>
+
+  <div class="text-center" style="margin: 4rem 0 6rem;">
+    <a href="pages/playquiz.html" class="btn-secondary-custom" style="padding: 1rem 3rem;">View All Quizzes</a>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-brand">
+        <span class="brand-q">Q</span>uizHunt
+      </div>
+      <hr style="width: 100px; border-color: rgba(255,255,255,0.1); margin: 0;"/>
+      <p class="footer-text">© 2026 QuizHunt. Designed for developers by developers.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="scripts/jquery-3.2.1.js"></script>
+  <script src="scripts/bootstrap.js"></script>
+  <script src="scripts/quiz-metadata.js?v=2"></script>
+  <script>
+    // Load top 6 quizzes for homepage
+    document.addEventListener("DOMContentLoaded", () => {
+       renderQuizCards("homepage-quizzes", 6);
+    });
+  </script>
+</body>
+</html>

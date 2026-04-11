@@ -1,0 +1,32 @@
+# ──────────────────────────────────────────────────────────────
+# Role: common — System Updates & Prerequisites
+# ──────────────────────────────────────────────────────────────
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Upgrade all system packages
+  apt:
+    upgrade: dist
+    force_apt_get: yes
+
+- name: Install prerequisite packages
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - software-properties-common
+      - python3-pip
+      - python3-setuptools
+      - unzip
+    state: present
+    update_cache: yes
+
+- name: Set timezone to UTC
+  timezone:
+    name: UTC

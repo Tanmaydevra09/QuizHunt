@@ -1,0 +1,6 @@
+aws_region           = "us-east-1"
+instance_type        = "t3.small"
+key_name             = "project"
+ssh_private_key_path = "/Users/tanmaydevra/Desktop/DevopsProject/QuizHunt/terraform/project.pem"
+dockerhub_username   = "tanmaydevra09"
+docker_image         = "quizhunt-app"
