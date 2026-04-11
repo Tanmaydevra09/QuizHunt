@@ -14,6 +14,21 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+            steps {
+                echo 'Running static code quality assessment through SonarQube...'
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                    sonar-scanner \
+                    -Dsonar.projectKey=quizhunt \
+                    -Dsonar.sources=. \
+                    -Dsonar.host.url=http://host.docker.internal:9000 \
+                    -Dsonar.login=sqa_21ba3004c407fbd083bc9aef95a8706c41d29dc4
+                    '''
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 echo 'Dynamically mapping container layers natively (Node.js & Telemetry)...'
