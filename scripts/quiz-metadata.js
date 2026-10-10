@@ -1,5 +1,12 @@
 const quizMetadata = [
   {
+    title: "Cloud & DevOps Quiz",
+    icon: "https://img.icons8.com/fluency/96/cloud.png",
+    url: "./cloud.html",
+    tag: "Cloud",
+    color: "#ff6b35"
+  },
+  {
     title: "C Language Quiz",
     icon: "https://img.icons8.com/fluency/144/c-programming.png",
     url: "./clanguage.html",

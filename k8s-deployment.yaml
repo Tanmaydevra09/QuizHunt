@@ -17,7 +17,7 @@ spec:
       containers:
       - name: quizhunt
         image: quizhunt:latest
-        imagePullPolicy: Never # Use local image for demo
+        imagePullPolicy: IfNotPresent # Use local image (works with Docker Desktop K8s)
         ports:
         - containerPort: 80
 ---
