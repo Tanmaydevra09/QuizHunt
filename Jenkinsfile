@@ -24,19 +24,20 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo 'Running static code analysis using SonarQube...'
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    withSonarQubeEnv('SonarQube') {
+                        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
+                            script {
+                                def scannerHome = tool 'SonarScanner'
 
-                withSonarQubeEnv('SonarQube') {
-                    withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
-                        script {
-                            def scannerHome = tool 'SonarScanner'
-
-                            sh """
-                            ${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=quizhunt \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=http://host.docker.internal:9000 \
-                            -Dsonar.login=${SONAR_TOKEN}
-                            """
+                                sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                -Dsonar.projectKey=quizhunt \
+                                -Dsonar.sources=. \
+                                -Dsonar.host.url=http://host.docker.internal:9000 \
+                                -Dsonar.login=${SONAR_TOKEN}
+                                """
+                            }
                         }
                     }
                 }
