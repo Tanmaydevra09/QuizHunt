@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        APP_NAME        = 'quizhunt-app'
+        APP_NAME        = 'quizhunt'
         DOCKERHUB_REPO  = 'tanmaydevra09/quizhunt-app'
         DEPLOYMENT_NAME = 'quizhunt-deployment'
         CONTAINER_NAME  = 'quizhunt'
