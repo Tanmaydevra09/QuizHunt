@@ -69,13 +69,15 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy') {
             steps {
-                echo 'Deploying updated image to Kubernetes cluster...'
+                echo 'Deploying updated image to production server...'
                 sh """
-                    kubectl set image deployment/${DEPLOYMENT_NAME} \
-                        ${CONTAINER_NAME}=${DOCKERHUB_REPO}:${BUILD_NUMBER}
-                    kubectl rollout status deployment/${DEPLOYMENT_NAME} --timeout=120s
+                    docker stop ${APP_NAME} || true
+                    docker rm ${APP_NAME} || true
+                    docker pull ${DOCKERHUB_REPO}:latest
+                    docker run -d --name ${APP_NAME} -p 80:80 ${DOCKERHUB_REPO}:latest
+                    echo 'Deployment complete! App running at port 80.'
                 """
             }
         }
