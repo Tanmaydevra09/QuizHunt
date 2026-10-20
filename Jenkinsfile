@@ -6,8 +6,10 @@ pipeline {
     }
 
     environment {
-        APP_NAME = 'quizhunt-app'
+        APP_NAME        = 'quizhunt-app'
+        DOCKERHUB_REPO  = 'tanmaydevra09/quizhunt-app'
         DEPLOYMENT_NAME = 'quizhunt-deployment'
+        CONTAINER_NAME  = 'quizhunt'
     }
 
     stages {
@@ -22,7 +24,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 echo 'Running static code analysis using SonarQube...'
-                
+
                 withSonarQubeEnv('SonarQube') {
                     withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN')]) {
                         script {
@@ -44,21 +46,43 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image for QuizHunt...'
-                sh "docker build -t ${APP_NAME}:latest ."
+                sh "docker build -t ${DOCKERHUB_REPO}:latest -t ${DOCKERHUB_REPO}:${BUILD_NUMBER} ."
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                echo 'Pushing Docker image to DockerHub registry...'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh """
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push ${DOCKERHUB_REPO}:latest
+                        docker push ${DOCKERHUB_REPO}:${BUILD_NUMBER}
+                        docker logout
+                    """
+                }
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
                 echo 'Deploying updated image to Kubernetes cluster...'
-                sh "kubectl rollout restart deployment ${DEPLOYMENT_NAME}"
+                sh """
+                    kubectl set image deployment/${DEPLOYMENT_NAME} \
+                        ${CONTAINER_NAME}=${DOCKERHUB_REPO}:${BUILD_NUMBER}
+                    kubectl rollout status deployment/${DEPLOYMENT_NAME} --timeout=120s
+                """
             }
         }
     }
 
     post {
         success {
-            echo 'Deployment successful! Monitoring via Prometheus and Grafana is active.'
+            echo "Deployment successful! Build #${BUILD_NUMBER} is live. Monitoring via Prometheus and Grafana is active."
         }
         failure {
             echo 'Pipeline failed. Please check logs for Docker/Kubernetes/SonarQube errors.'

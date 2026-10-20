@@ -13,8 +13,8 @@ spec:
         app: quizhunt
     spec:
       containers:
-      - name: quizhunt-container
-        image: quizhunt-app:latest
-        imagePullPolicy: Never
+      - name: quizhunt
+        image: tanmaydevra09/quizhunt-app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
